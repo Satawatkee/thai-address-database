@@ -1,27 +1,24 @@
-(function(angular){ 
-'use strict'
 const utilAddress = require('./util/splitAddress')
+const fs = require('fs')
 /**
  * From jquery.Thailand.js line 38 - 100
  */
-const preprocess = function (data) {
-  let lookup = []
-  let words = []
+const preprocess = function ({ data, lookup, words }) {
   let expanded = []
   let useLookup = false
   let t
 
-  if (data.lookup && data.words) {
+  if (lookup && words) {
     // compact with dictionary and lookup
     useLookup = true
-    lookup = data.lookup.split('|')
-    words = data.words.split('|')
-    data = data.data
+    lookup = lookup.split('|')
+    words = words.split('|')
   }
 
   t = function (text) {
     function repl (m) {
-      let ch = m.charCodeAt(0)
+      let ch = m.replace(/[{,}]/g, '').charCodeAt(0)
+
       return words[ch < 97 ? ch - 65 : 26 + ch - 97]
     }
     if (!useLookup) {
@@ -30,24 +27,22 @@ const preprocess = function (data) {
     if (typeof text === 'number') {
       text = lookup[text]
     }
-    return text.replace(/[A-Z]/ig, repl)
+    return text.replace(/\{[A-Z]}/g, repl)
   }
 
-  if (!data[0].length) {
-    // non-compacted database
-    return data
-  }
   // decompacted database in hierarchical form of:
   // [["province",[["amphur",[["district",["zip"...]]...]]...]]...]
   data.map(function (provinces) {
     let i = 1
-    if (provinces.length === 3) { // geographic database
+    if (provinces.length === 3) {
+      // geographic database
       i = 2
     }
 
     provinces[i].map(function (amphoes) {
       amphoes[i].map(function (districts) {
-        districts[i] = districts[i] instanceof Array ? districts[i] : [districts[i]]
+        districts[i] =
+          districts[i] instanceof Array ? districts[i] : [districts[i]]
         districts[i].map(function (zipcode) {
           let entry = {
             district: t(districts[0]),
@@ -55,7 +50,8 @@ const preprocess = function (data) {
             province: t(provinces[0]),
             zipcode: zipcode
           }
-          if (i === 2) { // geographic database
+          if (i === 2) {
+            // geographic database
             entry.district_code = districts[1] || false
             entry.amphoe_code = amphoes[1] || false
             entry.province_code = provinces[1] || false
@@ -69,7 +65,6 @@ const preprocess = function (data) {
 }
 
 const db = preprocess(require('../database/db.json'))
-
 const resolveResultbyField = (type, searchStr, maxResult) => {
   searchStr = searchStr.toString().trim()
   if (searchStr === '') {
@@ -80,10 +75,12 @@ const resolveResultbyField = (type, searchStr, maxResult) => {
   }
   let possibles = []
   try {
-    possibles = db.filter(item => {
-      let regex = new RegExp(searchStr, 'g')
-      return (item[type] || '').toString().match(regex)
-    }).slice(0, maxResult)
+    possibles = db
+      .filter((item) => {
+        let regex = new RegExp(searchStr, 'g')
+        return (item[type] || '').toString().match(regex)
+      })
+      .slice(0, maxResult)
   } catch (e) {
     return []
   }
@@ -130,18 +127,3 @@ exports.searchAddressByAmphoe = searchAddressByAmphoe
 exports.searchAddressByProvince = searchAddressByProvince
 exports.searchAddressByZipcode = searchAddressByZipcode
 exports.splitAddress = splitAddress
-
-if (angular) {
-  angular.module('thAddress', [])
-    .config(function($provide) {
-      $provide.value('thad', {
-        searchAddressByDistrict: searchAddressByDistrict,
-        searchAddressByAmphoe: searchAddressByAmphoe,
-        searchAddressByProvince: searchAddressByProvince,
-        searchAddressByZipcode: searchAddressByZipcode,
-        splitAddress: splitAddress
-      })
-    })
-}
-
-})(typeof angular !== 'undefined' ? angular : false)

@@ -41,6 +41,7 @@
   },
   "dependencies": {
     "convert-excel-to-json": "^1.2.1",
+    "csv-parser": "^2.3.2",
     "eslint-plugin-promise": "^3.5.0",
     "eslint-plugin-standard": "^3.0.1",
     "wordcut": "^0.8.1"

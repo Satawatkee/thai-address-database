@@ -20,68 +20,77 @@ let words = {}
 wordcut.init()
 
 // pass 1 generate dict and word list
-tree.forEach(p => {
+tree.forEach((p) => {
   addToDict(p[0])
-  p[1].forEach(a => {
+  p[1].forEach((a) => {
     addToDict(a[0])
-    a[1].forEach(d => {
+    a[1].forEach((d) => {
       addToDict(d[0])
     })
   })
 })
 
-
 console.log('words=', Object.keys(words).length)
 // processs words sorting top 52 most occurrences
 let newWords = {}
-Object.keys(words).sort((a, b) => {
-  // order by descending
-  if (words[a] === words[b]) {
-    return 0
-  }
-  if (words[a] < words[b]) {
-    return 1
-  }
-  return -1
-})
-.filter((word, i) => i < 52)
-.forEach((word, i) => {
-  newWords[String.fromCharCode(i < 26 ? 65 + i : 97 + i - 26)] = word
-})
+Object.keys(words)
+  .sort((a, b) => {
+    // order by descending
+    if (words[a] === words[b]) {
+      return 0
+    }
+    if (words[a] < words[b]) {
+      return 1
+    }
+    return -1
+  })
+  .filter((word, i) => i < 15)
+  .forEach((word, i) => {
+    newWords[`{${String.fromCharCode(i < 26 ? 65 + i : 97 + i - 26)}}`] = word
+  })
 
-//console.log('most freq word=', Object.keys(newWords).map(idx => [newWords[idx], words[newWords[idx]]]))
-fs.writeFileSync('./database/migrate/words.txt', 
+// console.log('most freq word=', Object.keys(newWords).map(idx => [newWords[idx], words[newWords[idx]]]))
+fs.writeFileSync(
+  './database/migrate/words.txt',
   '|คำ|จำนวนครั้ง|\n' +
-  '|---|---:|\n' +
-  Object.keys(newWords).map(idx => '|' + newWords[idx] + '|' + words[newWords[idx]] + '|').join('\n')
+    '|---|---:|\n' +
+    Object.keys(newWords)
+      .map((idx) => '|' + newWords[idx] + '|' + words[newWords[idx]] + '|')
+      .join('\n')
 )
 
 // process dict keep only 2 or more occurences
 let newDict = {}
 let lookup = []
-Object.keys(dict).filter(key => dict[key] > 1).forEach(key => {
-  key = changeWord(key)
-  newDict[key] = lookup.length
-  lookup.push(key)
-})
-
+Object.keys(dict)
+  .filter((key) => dict[key] > 1)
+  .forEach((key) => {
+    key = changeWord(key)
+    newDict[key] = lookup.length
+    lookup.push(key)
+  })
 
 // pass 2: rebuild tree
-let newTree = tree.map(p =>
-  [findIndex(p[0]), p[1].map(a => 
-    [findIndex(a[0]), a[1].map(d =>
-      [findIndex(d[0]), d[1].length === 1 ? d[1][0] : d[1]]
-    )]
-  )]
+let newTree = tree.map((p) => [
+  findIndex(p[0]),
+  p[1].map((a) => [
+    findIndex(a[0]),
+    a[1].map((d) => [findIndex(d[0]), d[1].length === 1 ? d[1][0] : d[1]])
+  ])
+])
+
+fs.writeFileSync(
+  './database/db.json',
+  JSON.stringify({
+    data: newTree,
+    lookup: lookup.join('|'),
+    words: Object.keys(newWords)
+      .map((ch) => newWords[ch])
+      .join('|')
+  })
 )
 
-fs.writeFileSync('./database/db.json', JSON.stringify({
-  data: newTree,
-  lookup: lookup.join('|'),
-  words: Object.keys(newWords).map((ch) => newWords[ch]).join('|'),
-}))
-
-function addToDict(key) {
+function addToDict (key) {
   if (typeof dict[key] === 'undefined') {
     dict[key] = 1
   } else {
@@ -89,6 +98,10 @@ function addToDict(key) {
   }
   let wordList = wordcut.cut(key).split('|')
   wordList.forEach((word) => {
+    if (/\s/g.test(word)) {
+      return
+    }
+
     if (typeof words[word] === 'undefined') {
       words[word] = 1
     } else {
@@ -97,13 +110,13 @@ function addToDict(key) {
   })
 }
 
-function findIndex(key) {
+function findIndex (key) {
   key = changeWord(key)
   return typeof newDict[key] === 'number' ? newDict[key] : key
 }
 
-function changeWord(text) {
-  Object.keys(newWords).forEach(ch => {
+function changeWord (text) {
+  Object.keys(newWords).forEach((ch) => {
     text = text.replace(newWords[ch], ch)
   })
   return text
