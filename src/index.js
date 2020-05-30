@@ -77,7 +77,7 @@ const resolveResultbyField = (type, searchStr, maxResult) => {
   try {
     possibles = db
       .filter((item) => {
-        let regex = new RegExp(searchStr, 'g')
+        let regex = new RegExp(searchStr, 'ig')
         return (item[type] || '').toString().match(regex)
       })
       .slice(0, maxResult)
