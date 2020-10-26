@@ -19,8 +19,8 @@ exports.prepareAddress = function (address, zip) {
   return address
 }
 
-exports.getBestResult = function (zip, address) {
-  let searchResult = lib.searchAddressByZipcode(zip)
+exports.getBestResult = function (zip, address, lang) {
+  let searchResult = lib.searchAddressByZipcode(zip, undefined, lang)
   searchResult.forEach((element, index) => {
     let district = address.indexOf(element.district)
     let next = (district !== -1) ? district + 1 : 0

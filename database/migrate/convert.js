@@ -52,6 +52,7 @@ Object.keys(words)
 // console.log('most freq word=', Object.keys(newWords).map(idx => [newWords[idx], words[newWords[idx]]]))
 fs.writeFileSync(
   './database/migrate/words.txt',
+  // './database/migrate/words-th.txt',
   '|คำ|จำนวนครั้ง|\n' +
     '|---|---:|\n' +
     Object.keys(newWords)
@@ -81,6 +82,7 @@ let newTree = tree.map((p) => [
 
 fs.writeFileSync(
   './database/db.json',
+  // './database/db-th.json',
   JSON.stringify({
     data: newTree,
     lookup: lookup.join('|'),

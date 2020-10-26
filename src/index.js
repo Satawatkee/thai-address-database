@@ -64,8 +64,11 @@ const preprocess = function ({ data, lookup, words }) {
   return expanded
 }
 
-const db = preprocess(require('../database/db.json'))
-const resolveResultbyField = (type, searchStr, maxResult) => {
+const db = {
+  'en-GB': preprocess(require('../database/db.json')),
+  'th-TH': preprocess(require('../database/db-th.json'))
+}
+const resolveResultbyField = (type, searchStr, maxResult, lang) => {
   searchStr = searchStr.toString().trim()
   if (searchStr === '') {
     return []
@@ -75,7 +78,7 @@ const resolveResultbyField = (type, searchStr, maxResult) => {
   }
   let possibles = []
   try {
-    possibles = db
+    possibles = (db[lang] || db['en-GB'])
       .filter((item) => {
         let regex = new RegExp(searchStr, 'ig')
         return (item[type] || '').toString().match(regex)
@@ -87,17 +90,17 @@ const resolveResultbyField = (type, searchStr, maxResult) => {
   return possibles
 }
 
-const searchAddressByDistrict = (searchStr, maxResult) => {
-  return resolveResultbyField('district', searchStr, maxResult)
+const searchAddressByDistrict = (searchStr, maxResult, lang) => {
+  return resolveResultbyField('district', searchStr, maxResult, lang)
 }
-const searchAddressByAmphoe = (searchStr, maxResult) => {
-  return resolveResultbyField('amphoe', searchStr, maxResult)
+const searchAddressByAmphoe = (searchStr, maxResult, lang) => {
+  return resolveResultbyField('amphoe', searchStr, maxResult, lang)
 }
-const searchAddressByProvince = (searchStr, maxResult) => {
-  return resolveResultbyField('province', searchStr, maxResult)
+const searchAddressByProvince = (searchStr, maxResult, lang) => {
+  return resolveResultbyField('province', searchStr, maxResult, lang)
 }
-const searchAddressByZipcode = (searchStr, maxResult) => {
-  return resolveResultbyField('zipcode', searchStr, maxResult)
+const searchAddressByZipcode = (searchStr, maxResult, lang) => {
+  return resolveResultbyField('zipcode', searchStr, maxResult, lang)
 }
 
 const splitAddress = (fullAddress) => {
