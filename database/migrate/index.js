@@ -9,13 +9,13 @@ fs.createReadStream('database/raw_database/location_master.csv')
   .pipe(csv())
   .on('data', (data) => {
     result.push({
-      province: data.province_en,
-      amphoe: data.district_en,
-      district: data.sub_district_en,
-      zipcode: data.postal_code,
-      province_th: data.province,
-      amphoe_th: data.district,
-      district_th: data.sub_district
+      province: data.province_en.trim(),
+      amphoe: data.district_en.trim(),
+      district: data.sub_district_en.trim(),
+      zipcode: data.postal_code.trim(),
+      province_th: data.province.trim(),
+      amphoe_th: data.district.trim(),
+      district_th: data.sub_district.trim()
     })
     // result.push({
     //   province: data.province,
