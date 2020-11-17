@@ -65,8 +65,8 @@ const preprocess = function ({ data, lookup, words }) {
 }
 
 const db = {
-  'en-GB': preprocess(require('../database/db.json')),
-  'th-TH': preprocess(require('../database/db-th.json'))
+  'en-GB': preprocess(require('../database/db-th-en.json')),
+  'th-TH': preprocess(require('../database/db-th-th.json'))
 }
 const resolveResultbyField = (type, searchStr, maxResult, lang) => {
   searchStr = searchStr.toString().trim()
