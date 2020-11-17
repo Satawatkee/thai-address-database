@@ -1,12 +1,11 @@
-const utilAddress = require('./util/splitAddress')
-const fs = require('fs')
-/**
- * From jquery.Thailand.js line 38 - 100
- */
-const preprocess = function ({ data, lookup, words }) {
-  let expanded = []
-  let useLookup = false
-  let t
+function preprocess (_ref) {
+  var data = _ref.data,
+    lookup = _ref.lookup,
+    words = _ref.words
+
+  var expanded = []
+  var useLookup = false
+  var t = void 0
 
   if (lookup && words) {
     // compact with dictionary and lookup
@@ -15,9 +14,9 @@ const preprocess = function ({ data, lookup, words }) {
     words = words.split('|')
   }
 
-  t = function (text) {
+  t = function t (text) {
     function repl (m) {
-      let ch = m.replace(/[{,}]/g, '').charCodeAt(0)
+      var ch = m.replace(/[{,}]/g, '').charCodeAt(0)
 
       return words[ch < 97 ? ch - 65 : 26 + ch - 97]
     }
@@ -33,7 +32,7 @@ const preprocess = function ({ data, lookup, words }) {
   // decompacted database in hierarchical form of:
   // [["province",[["amphur",[["district",["zip"...]]...]]...]]...]
   data.map(function (provinces) {
-    let i = 1
+    var i = 1
     if (provinces.length === 3) {
       // geographic database
       i = 2
@@ -44,7 +43,7 @@ const preprocess = function ({ data, lookup, words }) {
         districts[i] =
           districts[i] instanceof Array ? districts[i] : [districts[i]]
         districts[i].map(function (zipcode) {
-          let entry = {
+          var entry = {
             district: t(districts[0]),
             amphoe: t(amphoes[0]),
             province: t(provinces[0]),
@@ -64,11 +63,17 @@ const preprocess = function ({ data, lookup, words }) {
   return expanded
 }
 
-const db = {
-  'en-GB': preprocess(require('../database/db-th-en.json')),
-  'th-TH': preprocess(require('../database/db-th-th.json'))
+let db = []
+
+export const setDB = (newDB) => {
+  db = preprocess(newDB)
 }
-const resolveResultbyField = (type, searchStr, maxResult, lang) => {
+
+var resolveResultbyField = function resolveResultbyField (
+  type,
+  searchStr,
+  maxResult
+) {
   searchStr = searchStr.toString().trim()
   if (searchStr === '') {
     return []
@@ -76,11 +81,11 @@ const resolveResultbyField = (type, searchStr, maxResult, lang) => {
   if (!maxResult) {
     maxResult = 20
   }
-  let possibles = []
+  var possibles = []
   try {
-    possibles = (db[lang] || db['en-GB'])
-      .filter((item) => {
-        let regex = new RegExp(searchStr, 'ig')
+    possibles = db
+      .filter(function (item) {
+        var regex = new RegExp(searchStr, 'ig')
         return (item[type] || '').toString().match(regex)
       })
       .slice(0, maxResult)
@@ -90,43 +95,27 @@ const resolveResultbyField = (type, searchStr, maxResult, lang) => {
   return possibles
 }
 
-const searchAddressByDistrict = (searchStr, maxResult, lang) => {
-  return resolveResultbyField('district', searchStr, maxResult, lang)
+export var searchAddressByDistrict = function searchAddressByDistrict (
+  searchStr,
+  maxResult
+) {
+  return resolveResultbyField('district', searchStr, maxResult)
 }
-const searchAddressByAmphoe = (searchStr, maxResult, lang) => {
-  return resolveResultbyField('amphoe', searchStr, maxResult, lang)
+export var searchAddressByAmphoe = function searchAddressByAmphoe (
+  searchStr,
+  maxResult
+) {
+  return resolveResultbyField('amphoe', searchStr, maxResult)
 }
-const searchAddressByProvince = (searchStr, maxResult, lang) => {
-  return resolveResultbyField('province', searchStr, maxResult, lang)
+export var searchAddressByProvince = function searchAddressByProvince (
+  searchStr,
+  maxResult
+) {
+  return resolveResultbyField('province', searchStr, maxResult)
 }
-const searchAddressByZipcode = (searchStr, maxResult, lang) => {
-  return resolveResultbyField('zipcode', searchStr, maxResult, lang)
+export var searchAddressByZipcode = function searchAddressByZipcode (
+  searchStr,
+  maxResult
+) {
+  return resolveResultbyField('zipcode', searchStr, maxResult)
 }
-
-const splitAddress = (fullAddress) => {
-  let regex = /\s(\d{5})(\s|$)/gi
-  let regexResult = regex.exec(fullAddress)
-  if (!regexResult) {
-    return null
-  }
-  let zip = regexResult[1]
-  let address = utilAddress.prepareAddress(fullAddress, zip)
-  let result = utilAddress.getBestResult(zip, address)
-  if (result) {
-    let newAddress = utilAddress.cleanupAddress(address, result)
-    return {
-      address: newAddress,
-      district: result.district,
-      amphoe: result.amphoe,
-      province: result.province,
-      zipcode: zip
-    }
-  }
-  return null
-}
-
-exports.searchAddressByDistrict = searchAddressByDistrict
-exports.searchAddressByAmphoe = searchAddressByAmphoe
-exports.searchAddressByProvince = searchAddressByProvince
-exports.searchAddressByZipcode = searchAddressByZipcode
-exports.splitAddress = splitAddress

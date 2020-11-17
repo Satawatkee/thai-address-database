@@ -1,0 +1,17 @@
+|คำ|จำนวนครั้ง|
+|---|---:|
+|SELATAN|262|
+|BARAT|261|
+|)|256|
+|(|256|
+|TIMUR|252|
+|UTARA|242|
+|TENGAH|137|
+|KOTA|78|
+|PULAU|75|
+|SUNGAI|61|
+|TANJUNG|60|
+|HULU|59|
+|MUARA|51|
+|RAYA|48|
+|PADANG|47|
