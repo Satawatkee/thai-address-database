@@ -42,13 +42,14 @@ fs.createReadStream('database/raw_database/location_master.csv')
             if (!acc[province]) {
               obj[province] = province_th
             }
-
-            if (!acc[amphoe]) {
-              obj[amphoe] = amphoe_th
+            const amphoeKey = `subdistrict.${amphoe}`
+            if (!acc[amphoeKey]) {
+              obj[amphoeKey] = amphoe_th
             }
 
-            if (!acc[district]) {
-              obj[district] = district_th
+            const districtKey = `district.${district}`
+            if (!acc[districtKey]) {
+              obj[districtKey] = district_th
             }
 
             return {
@@ -92,32 +93,30 @@ const process = (result) => {
       }
 
       let exec = require('child_process').exec
-      exec('node ./database/migrate/buildTree.js', function (
-        err,
-        stdout,
-        stderr
-      ) {
-        if (err) {
-          console.log(err)
-          return
-        }
-        console.log('Build json tree ---- done !')
-        exec('node ./database/migrate/convert.js', function (
-          err,
-          stdout,
-          stderr
-        ) {
+      exec(
+        'node ./database/migrate/buildTree.js',
+        function (err, stdout, stderr) {
           if (err) {
             console.log(err)
             return
           }
+          console.log('Build json tree ---- done !')
+          exec(
+            'node ./database/migrate/convert.js',
+            function (err, stdout, stderr) {
+              if (err) {
+                console.log(err)
+                return
+              }
 
-          fs.unlinkSync('./database/migrate/tree.json')
-          fs.unlinkSync('./database/migrate/database.json')
-          console.log('Minify tree ---- done !')
-          console.log('All task completed and ready to go !!')
-        })
-      })
+              fs.unlinkSync('./database/migrate/tree.json')
+              fs.unlinkSync('./database/migrate/database.json')
+              console.log('Minify tree ---- done !')
+              console.log('All task completed and ready to go !!')
+            }
+          )
+        }
+      )
     }
   )
 }
