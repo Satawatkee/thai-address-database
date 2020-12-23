@@ -12,7 +12,9 @@
     ]
   },
   "scripts": {
-    "migrate": "node ./database/migrate/index.js",
+    "migrate:en": "LANG=en node ./database/migrate/index.js",
+    "migrate:th": "LANG=th node ./database/migrate/index.js",
+    "migrate": "yarn migrate:en && yarn migrate:th",
     "test": "mocha --reporter spec",
     "prepublish": "node_modules/babel-cli/bin/babel.js src --out-dir lib",
     "lint": "eslint --ext .js src test",

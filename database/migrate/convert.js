@@ -31,6 +31,8 @@ tree.forEach((p) => {
 })
 
 console.log('words=', Object.keys(words).length)
+
+const language = process.env.LANG
 // processs words sorting top 52 most occurrences
 let newWords = {}
 Object.keys(words)
@@ -51,8 +53,9 @@ Object.keys(words)
 
 // console.log('most freq word=', Object.keys(newWords).map(idx => [newWords[idx], words[newWords[idx]]]))
 fs.writeFileSync(
-  './database/migrate/words.txt',
-  // './database/migrate/words-th.txt',
+  language === 'en'
+    ? './database/migrate/words-en.txt'
+    : './database/migrate/words-th.txt',
   '|คำ|จำนวนครั้ง|\n' +
     '|---|---:|\n' +
     Object.keys(newWords)
@@ -81,8 +84,7 @@ let newTree = tree.map((p) => [
 ])
 
 fs.writeFileSync(
-  './database/db.json',
-  // './database/db-th.json',
+  language === 'en' ? './database/db-th-en.json' : './database/db-th-th.json',
   JSON.stringify({
     data: newTree,
     lookup: lookup.join('|'),

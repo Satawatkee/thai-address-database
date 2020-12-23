@@ -1,3 +1,4 @@
+const language = process.env.LANG
 const fs = require('fs')
 // const excelToJson = require('convert-excel-to-json')
 const csv = require('csv-parser')
@@ -8,61 +9,73 @@ result = []
 fs.createReadStream('database/raw_database/location_master.csv')
   .pipe(csv())
   .on('data', (data) => {
-    result.push({
-      province: data.province_en.trim(),
-      amphoe: data.district_en.trim(),
-      district: data.sub_district_en.trim(),
-      zipcode: data.postal_code.trim(),
-      province_th: data.province.trim(),
-      amphoe_th: data.district.trim(),
-      district_th: data.sub_district.trim()
-    })
-    // result.push({
-    //   province: data.province,
-    //   amphoe: data.district,
-    //   district: data.sub_district,
-    //   zipcode: data.postal_code
-    // })
+    if (language === 'en') {
+      result.push({
+        province: data.province_en.trim(),
+        amphoe: data.district_en.trim(),
+        district: data.sub_district_en.trim(),
+        zipcode: data.postal_code.trim(),
+        province_th: data.province.trim(),
+        amphoe_th: data.district.trim(),
+        district_th: data.sub_district.trim()
+      })
+    } else {
+      result.push({
+        province: data.province,
+        amphoe: data.district,
+        district: data.sub_district,
+        zipcode: data.postal_code
+      })
+    }
   })
   .on('end', () => {
-    process(result)
-    fs.writeFile(
-      './database/th.json',
-      JSON.stringify(
-        result.reduce(
-          (
-            acc,
-            { province, province_th, amphoe, amphoe_th, district, district_th },
-            index
-          ) => {
-            const obj = {}
+    processDatabase(result)
+    if (language === 'en') {
+      fs.writeFile(
+        './database/th.json',
+        JSON.stringify(
+          result.reduce(
+            (
+              acc,
+              {
+                province,
+                province_th: provinceTh,
+                amphoe,
+                amphoe_th: amphoeTh,
+                district,
+                district_th: districtTh
+              },
+              index
+            ) => {
+              const obj = {}
 
-            if (index === 1) return {}
+              if (index === 1) return {}
 
-            if (!acc[province]) {
-              obj[province] = province_th
-            }
-            const amphoeKey = `district.${amphoe}`
-            if (!acc[amphoeKey]) {
-              obj[amphoeKey] = amphoe_th
-            }
+              if (!acc[province]) {
+                obj[province] = provinceTh
+              }
+              const amphoeKey = `district.${amphoe}`
+              if (!acc[amphoeKey]) {
+                obj[amphoeKey] = amphoeTh
+              }
 
-            const districtKey = `subdistrict.${district}`
-            if (!acc[districtKey]) {
-              obj[districtKey] = district_th
-            }
+              const districtKey = `subdistrict.${district}`
+              if (!acc[districtKey]) {
+                obj[districtKey] = districtTh
+              }
 
-            return {
-              ...acc,
-              ...obj
+              return {
+                ...acc,
+                ...obj
+              }
             }
-          }
+          ),
+          {}
         ),
-        {}
-      ),
-      'utf8',
-      () => {}
-    )
+        'utf8',
+        () => {}
+      )
+    }
   })
 //   console.log('Converting excel to JSON...')
 //   result = excelToJson({
@@ -79,7 +92,7 @@ fs.createReadStream('database/raw_database/location_master.csv')
 //   }).Sheet1
 //   process(result)
 
-const process = (result) => {
+const processDatabase = (result) => {
   console.log('Converting ---- done !')
   fs.writeFile(
     './database/migrate/database.json',
