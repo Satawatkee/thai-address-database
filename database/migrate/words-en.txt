@@ -10,8 +10,8 @@
 |Mae|187|
 |Thong|184|
 |Si|181|
-|Sai|175|
 |Khao|175|
+|Sai|175|
 |Khok|170|
 |Khlong|168|
 |Yai|166|
