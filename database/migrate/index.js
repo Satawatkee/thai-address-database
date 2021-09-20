@@ -54,12 +54,12 @@ fs.createReadStream('database/raw_database/location_master.csv')
               if (!acc[province]) {
                 obj[province] = provinceTh
               }
-              const amphoeKey = `district.${amphoe}`
+              const amphoeKey = `district.${province}.${amphoe}`
               if (!acc[amphoeKey]) {
                 obj[amphoeKey] = amphoeTh
               }
 
-              const districtKey = `subdistrict.${district}`
+              const districtKey = `subdistrict.${province}.${amphoe}.${district}`
               if (!acc[districtKey]) {
                 obj[districtKey] = districtTh
               }
